@@ -5,30 +5,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-
-public class ColorBotApp {
-    private final ColorBot bot;
-    private final JFrame frame;
-    private final JTextField coordsField = new JTextField();
-    private final JTextField colorField = new JTextField();
-    private final JTextField captureKeyField = new JTextField();
-    private final JTextField visibleKeyField = new JTextField();
-    private final JTextField missingKeyField = new JTextField();
-    private final JCheckBox failCheckbox = new JCheckBox("Throw when missing", true);
-    private final JLabel statusLabel = new JLabel("Waiting for configuration");
-    private final Timer monitorTimer;
 
     public ColorBotApp() {
         ColorBotConfig defaultConfig = new ColorBotConfig();
