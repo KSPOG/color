@@ -5,33 +5,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-
-public class ColorBotApp {
-    private final ColorBot bot;
-    private final JFrame frame;
-    private final JTextField coordsField = new JTextField();
-    private final JTextField colorField = new JTextField();
-    private final JTextField captureKeyField = new JTextField();
-    private final JTextField visibleKeyField = new JTextField();
-    private final JTextField missingKeyField = new JTextField();
-    private final JCheckBox failCheckbox = new JCheckBox("Throw when missing", true);
-    private final JLabel statusLabel = new JLabel("Waiting for configuration");
-    private final Timer monitorTimer;
-    private java.awt.KeyEventDispatcher captureDispatcher;
 
     public ColorBotApp() {
         ColorBotConfig defaultConfig = new ColorBotConfig();
@@ -166,20 +139,6 @@ public class ColorBotApp {
                 captureUnderCursor(e);
             }
         });
-
-        // Also listen to raw key events so the capture always triggers when the
-        // window is focused, even if a child component has focus.
-        if (captureDispatcher != null) {
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(captureDispatcher);
-        }
-        captureDispatcher = event -> {
-            if (event.getID() == KeyEvent.KEY_PRESSED && event.getKeyCode() == keyCode) {
-                captureUnderCursor(new ActionEvent(event.getSource(), ActionEvent.ACTION_PERFORMED, "hotkey"));
-                return true;
-            }
-            return false;
-        };
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(captureDispatcher);
     }
 
     private int parseKeyCode(String text, int fallback) {
