@@ -4,7 +4,44 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.KeyboardFocusManager;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.Timer;
+
+public class ColorBotApp {
+    private final ColorBot bot;
+    private final JFrame frame;
+    private final JTextField coordsField = new JTextField();
+    private final JTextField colorField = new JTextField();
+    private final JTextField captureKeyField = new JTextField();
+    private final JTextField visibleKeyField = new JTextField();
+    private final JTextField missingKeyField = new JTextField();
+    private final JCheckBox failCheckbox = new JCheckBox("Throw when missing", true);
+    private final JLabel statusLabel = new JLabel("Waiting for configuration");
+    private final Timer monitorTimer;
+    private java.awt.KeyEventDispatcher captureDispatcher;
+    private TrayIcon trayIcon;
+
+import java.awt.GridLayout;
+
 
     public ColorBotApp() {
         ColorBotConfig defaultConfig = new ColorBotConfig();
@@ -76,6 +113,9 @@ import java.awt.GridLayout;
         coordsField.setText(result.point().x + ", " + result.point().y);
         colorField.setText(result.hex());
         statusLabel.setText("Captured coordinates and color code.");
+
+        showTrayMessage("Color Bot", "Set coords " + result.point().x + ", " + result.point().y
+                + " with color " + result.hex());
     }
 
     private void toggleMonitoring(JButton monitorButton) {
@@ -139,6 +179,55 @@ import java.awt.GridLayout;
                 captureUnderCursor(e);
             }
         });
+
+
+        // Also listen to raw key events so the capture always triggers when the
+        // window is focused, even if a child component has focus.
+        if (captureDispatcher != null) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(captureDispatcher);
+        }
+        captureDispatcher = event -> {
+            if (event.getID() == KeyEvent.KEY_PRESSED && event.getKeyCode() == keyCode) {
+                captureUnderCursor(new ActionEvent(event.getSource(), ActionEvent.ACTION_PERFORMED, "hotkey"));
+                return true;
+            }
+            return false;
+        };
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(captureDispatcher);
+    }
+
+    private void showTrayMessage(String title, String message) {
+        try {
+            ensureTrayIcon();
+            if (trayIcon != null) {
+                trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
+            }
+        } catch (Exception ignored) {
+            // If the tray is not available, silently skip tray notifications.
+        }
+    }
+
+    private void ensureTrayIcon() throws Exception {
+        if (trayIcon != null || !SystemTray.isSupported()) {
+            return;
+        }
+        SystemTray tray = SystemTray.getSystemTray();
+        Image image = createTrayImage();
+        trayIcon = new TrayIcon(image, "Color Bot");
+        trayIcon.setImageAutoSize(true);
+        tray.add(trayIcon);
+    }
+
+    private Image createTrayImage() {
+        BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(new java.awt.Color(70, 130, 180));
+        g.fillRect(0, 0, 16, 16);
+        g.setColor(java.awt.Color.WHITE);
+        g.drawString("C", 4, 12);
+        g.dispose();
+        return image;
+
     }
 
     private int parseKeyCode(String text, int fallback) {
