@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -38,6 +39,9 @@ public class ColorBotApp {
     private final Timer monitorTimer;
     private java.awt.KeyEventDispatcher captureDispatcher;
     private TrayIcon trayIcon;
+
+import java.awt.GridLayout;
+
 
     public ColorBotApp() {
         ColorBotConfig defaultConfig = new ColorBotConfig();
@@ -109,6 +113,7 @@ public class ColorBotApp {
         coordsField.setText(result.point().x + ", " + result.point().y);
         colorField.setText(result.hex());
         statusLabel.setText("Captured coordinates and color code.");
+
         showTrayMessage("Color Bot", "Set coords " + result.point().x + ", " + result.point().y
                 + " with color " + result.hex());
     }
@@ -175,6 +180,7 @@ public class ColorBotApp {
             }
         });
 
+
         // Also listen to raw key events so the capture always triggers when the
         // window is focused, even if a child component has focus.
         if (captureDispatcher != null) {
@@ -221,6 +227,7 @@ public class ColorBotApp {
         g.drawString("C", 4, 12);
         g.dispose();
         return image;
+
     }
 
     private int parseKeyCode(String text, int fallback) {
