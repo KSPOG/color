@@ -16,7 +16,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-
 import javax.swing.JSplitPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -27,6 +26,27 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Utilities;
+
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -50,6 +70,7 @@ import java.awt.event.KeyEvent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class ColorBotApp extends JFrame {
     private final JTextField coordinateField = new JTextField();
     private final JTextField colorField = new JTextField();
@@ -64,12 +85,24 @@ public class ColorBotApp extends JFrame {
     private final JList<String> savedScriptsList = new JList<>();
     private final Map<String, String> savedScripts = new LinkedHashMap<>();
     private final JButton captureButton = new JButton();
+    private final JButton screenshotButton = new JButton("Spy glass (F12)");
+
+
+    private final JList<String> savedScriptsList = new JList<>();
+    private final Map<String, String> savedScripts = new LinkedHashMap<>();
+    private final JButton captureButton = new JButton();
     private final ColorLibrary library = new ColorLibrary();
     private final ColorMonitor monitor = new ColorMonitor(library);
     private final ColorScriptEngine scriptEngine = new ColorScriptEngine(library);
     private final ExecutorService scriptExecutor = Executors.newSingleThreadExecutor();
 
     private KeyStroke captureKeyStroke;
+    private final KeyStroke screenshotKeyStroke = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F12, 0, false);
+    private boolean updatingScriptAutoFill = false;
+
+
+    private KeyStroke captureKeyStroke;
+
 
     public ColorBotApp() {
         super("Color Bot");
@@ -78,6 +111,9 @@ public class ColorBotApp extends JFrame {
         pack();
         setLocationRelativeTo(null);
         registerCaptureHotkey();
+
+        registerScreenshotHotkey();
+
     }
 
     private void buildUi() {
@@ -127,15 +163,27 @@ public class ColorBotApp extends JFrame {
         gbc.gridx = 3;
         panel.add(colorField, gbc);
 
+        captureButton.setText("Capture coords & color (" + captureHotkeyField.getText() + ")");
+
 
         captureButton.setText("Capture coords & color (" + captureHotkeyField.getText() + ")");
         JButton captureButton = new JButton("Capture coords & color (" + captureHotkeyField.getText() + ")");
+
         captureButton.addActionListener(e -> captureTarget());
         gbc.gridy = row++;
         gbc.gridx = 0;
         gbc.gridwidth = 4;
         panel.add(captureButton, gbc);
         gbc.gridwidth = 1;
+
+
+        screenshotButton.addActionListener(e -> captureFromScreenshot());
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 4;
+        panel.add(screenshotButton, gbc);
+        gbc.gridwidth = 1;
+
 
         gbc.gridy = row++;
         gbc.gridx = 0;
@@ -285,6 +333,74 @@ public class ColorBotApp extends JFrame {
                 "end";
     }
 
+
+    private void attachScriptAutofill() {
+        scriptArea.addCaretListener(e -> maybeAutofillColorLine());
+    }
+
+    private void maybeAutofillColorLine() {
+        if (updatingScriptAutoFill) {
+            return;
+        }
+        Document doc = scriptArea.getDocument();
+        int caret = scriptArea.getCaretPosition();
+        try {
+            int lineStart = Utilities.getRowStart(scriptArea, caret);
+            int lineEnd = Utilities.getRowEnd(scriptArea, caret);
+            if (lineStart == -1 || lineEnd == -1) {
+                return;
+            }
+            String line = doc.getText(lineStart, lineEnd - lineStart);
+            String marker = "If Color.At coordinate is not (RGB";
+            int markerIndex = line.indexOf(marker);
+            if (markerIndex == -1) {
+                return;
+            }
+
+            int openParen = line.indexOf('(', markerIndex);
+            int closeParen = line.indexOf(')', openParen + 1);
+            if (openParen == -1 || closeParen == -1) {
+                return;
+            }
+
+            int caretInLine = caret - lineStart;
+            if (caretInLine <= openParen || caretInLine >= closeParen) {
+                return;
+            }
+
+            ColorSample sample = library.getTargetSample().orElseGet(() -> {
+                ColorSample fresh = library.captureCurrentPixel();
+                library.setTargetSample(fresh);
+                coordinateField.setText(fresh.location().x + ", " + fresh.location().y);
+                colorField.setText(fresh.toHex());
+                appendLog("Captured target at " + fresh.location() + " = " + fresh.toHex());
+                return fresh;
+            });
+
+            int r = sample.color().getRed();
+            int g = sample.color().getGreen();
+            int b = sample.color().getBlue();
+            int x = sample.location().x;
+            int y = sample.location().y;
+            String suffix = line.substring(closeParen + 1);
+            String replacement = String.format("If Color.At coordinate is not (RGB '%d', '%d', '%d', '%d', '%d')%s", r, g, b, x, y, suffix);
+
+            if (replacement.equals(line)) {
+                return;
+            }
+
+            updatingScriptAutoFill = true;
+            doc.remove(lineStart, lineEnd - lineStart);
+            doc.insertString(lineStart, replacement, null);
+            int newCaret = Math.min(lineStart + replacement.length(), doc.getLength());
+            scriptArea.setCaretPosition(newCaret);
+        } catch (BadLocationException ignored) {
+            // ignore
+        } finally {
+            updatingScriptAutoFill = false;
+        }
+    }
+
     private void registerCaptureHotkey() {
         captureHotkeyField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -326,6 +442,19 @@ public class ColorBotApp extends JFrame {
             captureButton.setText("Capture coords & color");
             captureKeyStroke = null;
         }
+
+    }
+
+    private void registerScreenshotHotkey() {
+        ActionMap actionMap = getRootPane().getActionMap();
+        javax.swing.InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(screenshotKeyStroke, "screenshot-capture");
+        actionMap.put("screenshot-capture", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                appendLog("F12 pressed: capturing screenshot for pixel pick...");
+                captureFromScreenshot();
+            }
       
         panel.setBorder(BorderFactory.createTitledBorder("Script playground"));
         panel.add(new JScrollPane(scriptArea), BorderLayout.CENTER);
@@ -359,6 +488,7 @@ public class ColorBotApp extends JFrame {
                 // ignore invalid keys
             }
             return false;
+
         });
     }
 
@@ -368,6 +498,42 @@ public class ColorBotApp extends JFrame {
         coordinateField.setText(sample.location().x + ", " + sample.location().y);
         colorField.setText(sample.toHex());
         appendLog("Captured target at " + sample.location() + " = " + sample.toHex());
+    }
+
+
+    private void captureFromScreenshot() {
+        appendLog("Capturing screenshot for pixel pick...");
+        BufferedImage screenshot = library.captureScreenshot();
+        BufferedImage copy = new BufferedImage(screenshot.getWidth(), screenshot.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = copy.createGraphics();
+        g.drawImage(screenshot, 0, 0, null);
+        g.dispose();
+
+        javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Pick pixel from screenshot", true);
+        javax.swing.JLabel label = new javax.swing.JLabel(new javax.swing.ImageIcon(copy));
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                if (x < 0 || y < 0 || x >= copy.getWidth() || y >= copy.getHeight()) {
+                    return;
+                }
+                Color color = new Color(copy.getRGB(x, y), true);
+                ColorSample sample = new ColorSample(new Point(x, y), color);
+                library.setTargetSample(sample);
+                coordinateField.setText(sample.location().x + ", " + sample.location().y);
+                colorField.setText(sample.toHex());
+                appendLog("Captured screenshot target at (" + x + ", " + y + ") = " + sample.toHex());
+                dialog.dispose();
+            }
+        });
+
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(label);
+        dialog.add(scrollPane);
+        dialog.setSize(new Dimension(Math.min(1000, copy.getWidth() + 50), Math.min(800, copy.getHeight() + 50)));
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void toggleMonitor(JButton startButton) {

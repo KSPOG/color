@@ -19,13 +19,21 @@ public class ColorScriptEngine {
     private static final Pattern HOLD_PATTERN = Pattern.compile("HOLD\\s+(.+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern RELEASE_PATTERN = Pattern.compile("RELEASE\\s+(.+)", Pattern.CASE_INSENSITIVE);
 
+
+    private static final Pattern HOLD_PATTERN = Pattern.compile("HOLD\\s+(.+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern RELEASE_PATTERN = Pattern.compile("RELEASE\\s+(.+)", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern TYPE_PATTERN = Pattern.compile("TYPE\\s+\"?(.*?)\"?$", Pattern.CASE_INSENSITIVE);
     private static final Pattern MOVE_PATTERN = Pattern.compile("MOVE\\s+(-?\\d+)\\s+(-?\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern IF_TARGET_PATTERN = Pattern.compile(
             "IF_TARGET_VISIBLE\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern IF_COLOR_PATTERN = Pattern.compile(
+
+            "IF_COLOR\\s+(-?\\d+)\\s+(-?\\d+)\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
+
             "IF_COLOR\\s+(-?\\d+)\\s+(-?\\d+)\\s+([#A-Fa-f0-9]{6,7})\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
+
             Pattern.CASE_INSENSITIVE);
     private static final Pattern CAPTURE_PATTERN = Pattern.compile("CAPTURE_TARGET", Pattern.CASE_INSENSITIVE);
     private static final Pattern LOG_PATTERN = Pattern.compile("LOG\\s+(.+)", Pattern.CASE_INSENSITIVE);
@@ -38,7 +46,11 @@ public class ColorScriptEngine {
     private static final Pattern BLUE_EYE_HOLD_PATTERN = Pattern.compile("KEYBOARD\\.HOLD\\s+KEYS?\\('?(.*?)'?\\)", Pattern.CASE_INSENSITIVE);
     private static final Pattern BLUE_EYE_RELEASE_PATTERN = Pattern.compile("KEYBOARD\\.RELEASE\\s+KEYS?\\('?(.*?)'?\\)", Pattern.CASE_INSENSITIVE);
     private static final Pattern BLUE_EYE_IF_COLOR_PATTERN = Pattern.compile(
+
+            "IF\\s+COLOR\\.AT\\s+COORDINATE\\s+IS\\s+(NOT\\s+)?\\(RGB\\s+'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\)\\s*BEGIN",
+
             "IF\\s+COLOR\\.AT\\s+COORDINATE\\s+IS\\s+(NOT\\s+)?\(RGB\\s+'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\)\\s*BEGIN",
+
             Pattern.CASE_INSENSITIVE);
     private static final Pattern BLUE_EYE_LOOP_PATTERN = Pattern.compile("MACRO\\.LOOP\\('?(\\d+)'?\\)\\s*BEGIN", Pattern.CASE_INSENSITIVE);
     private static final Pattern END_PATTERN = Pattern.compile("END", Pattern.CASE_INSENSITIVE);
@@ -60,13 +72,16 @@ public class ColorScriptEngine {
 
     private void runLines(String[] lines, int start, int end, Consumer<String> logger, List<String> executed) {
         for (int i = start; i < end; i++) {
+
         for (int i = 0; i < lines.length; i++) {
+
             String line = lines[i].trim();
             if (line.isEmpty() || line.startsWith("#") || line.startsWith("//")) {
                 continue;
             }
             int lineNumber = i + 1;
             try {
+
 
                 Matcher blueEyeLoop = BLUE_EYE_LOOP_PATTERN.matcher(line);
                 if (blueEyeLoop.matches()) {
@@ -159,7 +174,9 @@ public class ColorScriptEngine {
             }
         }
         return -1;
+
         return executed;
+
     }
 
     private void executeLine(String line, Consumer<String> logger) {
@@ -227,9 +244,18 @@ public class ColorScriptEngine {
         if (colorMatcher.matches()) {
             int x = Integer.parseInt(colorMatcher.group(1));
             int y = Integer.parseInt(colorMatcher.group(2));
+
+            int r = Integer.parseInt(colorMatcher.group(3));
+            int g = Integer.parseInt(colorMatcher.group(4));
+            int b = Integer.parseInt(colorMatcher.group(5));
+            Color color = new Color(r, g, b);
+            boolean matches = library.isColorAt(new Point(x, y), color);
+            String action = matches ? colorMatcher.group(6) : colorMatcher.group(7);
+
             Color color = ColorLibrary.parseColor(colorMatcher.group(3));
             boolean matches = library.isColorAt(new Point(x, y), color);
             String action = matches ? colorMatcher.group(4) : colorMatcher.group(5);
+
             if (action != null) {
                 executeLine(action.trim(), logger);
             }

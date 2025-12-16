@@ -51,7 +51,9 @@ public final class KeyName {
         }
         normalized = normalized.replace("'", "").replace("\"", "");
         normalized = normalized.toUpperCase(Locale.ROOT);
+
         String normalized = keyName.trim().toUpperCase(Locale.ROOT);
+
         Integer mapped = KEY_MAP.get(normalized);
         if (mapped != null) {
             return mapped;
