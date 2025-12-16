@@ -60,6 +60,17 @@ public class ColorLibrary {
         robot.keyRelease(keyCode);
     }
 
+
+    public void holdKey(String keyName) {
+        int keyCode = KeyName.toKeyCode(keyName);
+        robot.keyPress(keyCode);
+    }
+
+    public void releaseKey(String keyName) {
+        int keyCode = KeyName.toKeyCode(keyName);
+        robot.keyRelease(keyCode);
+    }
+
     public void typeText(String text) {
         if (text == null) {
             return;
