@@ -1,5 +1,6 @@
 package com.example.colorbot;
 
+
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -7,6 +8,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,6 +47,30 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Utilities;
 
+import javax.swing.JSpinner;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+
 public class ColorBotApp extends JFrame {
     private final JTextField coordinateField = new JTextField();
     private final JTextField colorField = new JTextField();
@@ -52,17 +81,28 @@ public class ColorBotApp extends JFrame {
     private final JCheckBox failSafeCheckbox = new JCheckBox("Fail-safe: stop when missing", true);
     private final JTextArea logArea = new JTextArea();
     private final JTextArea scriptArea = new JTextArea();
+
     private final JList<String> savedScriptsList = new JList<>();
     private final Map<String, String> savedScripts = new LinkedHashMap<>();
     private final JButton captureButton = new JButton();
     private final JButton screenshotButton = new JButton("Spy glass (F12)");
+
+
+    private final JList<String> savedScriptsList = new JList<>();
+    private final Map<String, String> savedScripts = new LinkedHashMap<>();
+    private final JButton captureButton = new JButton();
     private final ColorLibrary library = new ColorLibrary();
     private final ColorMonitor monitor = new ColorMonitor(library);
     private final ColorScriptEngine scriptEngine = new ColorScriptEngine(library);
     private final ExecutorService scriptExecutor = Executors.newSingleThreadExecutor();
+
     private KeyStroke captureKeyStroke;
     private final KeyStroke screenshotKeyStroke = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F12, 0, false);
     private boolean updatingScriptAutoFill = false;
+
+
+    private KeyStroke captureKeyStroke;
+
 
     public ColorBotApp() {
         super("Color Bot");
@@ -71,7 +111,9 @@ public class ColorBotApp extends JFrame {
         pack();
         setLocationRelativeTo(null);
         registerCaptureHotkey();
+
         registerScreenshotHotkey();
+
     }
 
     private void buildUi() {
@@ -82,7 +124,7 @@ public class ColorBotApp extends JFrame {
         scriptArea.setText(defaultScript());
         scriptArea.setLineWrap(true);
         scriptArea.setPreferredSize(new Dimension(480, 200));
-        attachScriptAutofill();
+
         savedScriptsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         savedScriptsList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -122,6 +164,11 @@ public class ColorBotApp extends JFrame {
         panel.add(colorField, gbc);
 
         captureButton.setText("Capture coords & color (" + captureHotkeyField.getText() + ")");
+
+
+        captureButton.setText("Capture coords & color (" + captureHotkeyField.getText() + ")");
+        JButton captureButton = new JButton("Capture coords & color (" + captureHotkeyField.getText() + ")");
+
         captureButton.addActionListener(e -> captureTarget());
         gbc.gridy = row++;
         gbc.gridx = 0;
@@ -129,12 +176,14 @@ public class ColorBotApp extends JFrame {
         panel.add(captureButton, gbc);
         gbc.gridwidth = 1;
 
+
         screenshotButton.addActionListener(e -> captureFromScreenshot());
         gbc.gridy = row++;
         gbc.gridx = 0;
         gbc.gridwidth = 4;
         panel.add(screenshotButton, gbc);
         gbc.gridwidth = 1;
+
 
         gbc.gridy = row++;
         gbc.gridx = 0;
@@ -178,6 +227,7 @@ public class ColorBotApp extends JFrame {
 
     private JPanel buildScriptPanel() {
         JPanel panel = new JPanel(new BorderLayout(4, 4));
+
         panel.setBorder(BorderFactory.createTitledBorder("Scripts"));
 
         JPanel savedPanel = new JPanel(new BorderLayout(4, 4));
@@ -282,6 +332,7 @@ public class ColorBotApp extends JFrame {
                 "  PRESS " + visibleKeyField.getText() + "\n" +
                 "end";
     }
+
 
     private void attachScriptAutofill() {
         scriptArea.addCaretListener(e -> maybeAutofillColorLine());
@@ -391,6 +442,7 @@ public class ColorBotApp extends JFrame {
             captureButton.setText("Capture coords & color");
             captureKeyStroke = null;
         }
+
     }
 
     private void registerScreenshotHotkey() {
@@ -403,6 +455,40 @@ public class ColorBotApp extends JFrame {
                 appendLog("F12 pressed: capturing screenshot for pixel pick...");
                 captureFromScreenshot();
             }
+      
+        panel.setBorder(BorderFactory.createTitledBorder("Script playground"));
+        panel.add(new JScrollPane(scriptArea), BorderLayout.CENTER);
+        panel.add(new JLabel("Supported: WAIT, PRESS, TYPE, MOVE, CLICK, CAPTURE_TARGET, IF_TARGET_VISIBLE, IF_COLOR, LOG"), BorderLayout.NORTH);
+        JButton runButton = new JButton("Run script");
+        runButton.addActionListener(e -> runScript());
+        panel.add(runButton, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private String defaultScript() {
+        return "# Example macro inspired by Blue Eye Macro\n" +
+                "CAPTURE_TARGET\n" +
+                "WAIT 500\n" +
+                "IF_TARGET_VISIBLE THEN PRESS " + visibleKeyField.getText() + " ELSE PRESS " + missingKeyField.getText() + "\n" +
+                "LOG Done";
+    }
+
+    private void registerCaptureHotkey() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(event -> {
+            if (event.getID() != KeyEvent.KEY_PRESSED) {
+                return false;
+            }
+            try {
+                int expectedCode = KeyName.toKeyCode(captureHotkeyField.getText());
+                if (event.getKeyCode() == expectedCode) {
+                    captureTarget();
+                    return true;
+                }
+            } catch (Exception ignored) {
+                // ignore invalid keys
+            }
+            return false;
+
         });
     }
 
@@ -413,6 +499,7 @@ public class ColorBotApp extends JFrame {
         colorField.setText(sample.toHex());
         appendLog("Captured target at " + sample.location() + " = " + sample.toHex());
     }
+
 
     private void captureFromScreenshot() {
         appendLog("Capturing screenshot for pixel pick...");
