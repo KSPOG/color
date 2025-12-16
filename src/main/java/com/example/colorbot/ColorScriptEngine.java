@@ -15,8 +15,10 @@ import java.util.regex.Pattern;
 public class ColorScriptEngine {
     private static final Pattern WAIT_PATTERN = Pattern.compile("WAIT\\s+(\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern PRESS_PATTERN = Pattern.compile("PRESS\\s+([A-Z0-9_]+)", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern HOLD_PATTERN = Pattern.compile("HOLD\\s+(.+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern RELEASE_PATTERN = Pattern.compile("RELEASE\\s+(.+)", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern TYPE_PATTERN = Pattern.compile("TYPE\\s+\"?(.*?)\"?$", Pattern.CASE_INSENSITIVE);
     private static final Pattern MOVE_PATTERN = Pattern.compile("MOVE\\s+(-?\\d+)\\s+(-?\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern IF_TARGET_PATTERN = Pattern.compile(
@@ -28,6 +30,7 @@ public class ColorScriptEngine {
     private static final Pattern CAPTURE_PATTERN = Pattern.compile("CAPTURE_TARGET", Pattern.CASE_INSENSITIVE);
     private static final Pattern LOG_PATTERN = Pattern.compile("LOG\\s+(.+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLICK_PATTERN = Pattern.compile("CLICK", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern LOOP_PATTERN = Pattern.compile("LOOP\\s+(\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern END_LOOP_PATTERN = Pattern.compile("END_LOOP", Pattern.CASE_INSENSITIVE);
     private static final Pattern BLUE_EYE_PAUSE_PATTERN = Pattern.compile("MACRO\\.PAUSE\\('?(\\d+)'?\\)", Pattern.CASE_INSENSITIVE);
@@ -40,6 +43,7 @@ public class ColorScriptEngine {
     private static final Pattern BLUE_EYE_LOOP_PATTERN = Pattern.compile("MACRO\\.LOOP\\('?(\\d+)'?\\)\\s*BEGIN", Pattern.CASE_INSENSITIVE);
     private static final Pattern END_PATTERN = Pattern.compile("END", Pattern.CASE_INSENSITIVE);
 
+
     private final ColorLibrary library;
 
     public ColorScriptEngine(ColorLibrary library) {
@@ -49,18 +53,21 @@ public class ColorScriptEngine {
     public List<String> run(String scriptText, Consumer<String> logger) {
         List<String> executed = new ArrayList<>();
         String[] lines = scriptText.split("\\R");
+
         runLines(lines, 0, lines.length, logger, executed);
         return executed;
     }
 
     private void runLines(String[] lines, int start, int end, Consumer<String> logger, List<String> executed) {
         for (int i = start; i < end; i++) {
+        for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
             if (line.isEmpty() || line.startsWith("#") || line.startsWith("//")) {
                 continue;
             }
             int lineNumber = i + 1;
             try {
+
                 Matcher blueEyeLoop = BLUE_EYE_LOOP_PATTERN.matcher(line);
                 if (blueEyeLoop.matches()) {
                     int count = Integer.parseInt(blueEyeLoop.group(1));
@@ -125,6 +132,7 @@ public class ColorScriptEngine {
                 break;
             }
         }
+
     }
 
     private int findLoopEnd(String[] lines, int start, int end) {
@@ -151,6 +159,7 @@ public class ColorScriptEngine {
             }
         }
         return -1;
+        return executed;
     }
 
     private void executeLine(String line, Consumer<String> logger) {
@@ -168,6 +177,7 @@ public class ColorScriptEngine {
             logger.accept("Pressed " + key);
             return;
         }
+
         Matcher holdMatcher = HOLD_PATTERN.matcher(line);
         if (holdMatcher.matches()) {
             String key = holdMatcher.group(1).trim();
@@ -236,6 +246,7 @@ public class ColorScriptEngine {
             logger.accept("Clicked mouse");
             return;
         }
+
         Matcher pauseMatcher = BLUE_EYE_PAUSE_PATTERN.matcher(line);
         if (pauseMatcher.matches()) {
             long delay = Long.parseLong(pauseMatcher.group(1));
