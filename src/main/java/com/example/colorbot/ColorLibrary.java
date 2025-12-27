@@ -4,12 +4,22 @@ import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.MouseInfo;
 import java.awt.Point;
+
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
+
 import java.util.Objects;
+
+
+import java.util.Objects;
+
+import java.awt.Robot;
+import java.awt.event.InputEvent;
+
+
 import java.util.Optional;
 
 /**
@@ -19,10 +29,12 @@ public class ColorLibrary {
     private final Robot robot;
     private volatile ColorSample targetSample;
 
+
     public ColorLibrary(Robot robot) {
         this.robot = Objects.requireNonNull(robot, "robot");
         this.robot.setAutoWaitForIdle(true);
     }
+
 
     public ColorLibrary() {
         try {
@@ -68,6 +80,7 @@ public class ColorLibrary {
         robot.keyPress(keyCode);
         robot.keyRelease(keyCode);
     }
+
 
     public void holdKey(String keyName) {
         int keyCode = KeyName.toKeyCode(keyName);
@@ -124,6 +137,7 @@ public class ColorLibrary {
     public static String toHex(Color color) {
         return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
     }
+
 
     public BufferedImage captureScreenshot() {
         Rectangle screen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());

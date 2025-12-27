@@ -44,12 +44,19 @@ public final class KeyName {
         if (keyName == null || keyName.isBlank()) {
             throw new IllegalArgumentException("Key name cannot be blank");
         }
+
         String normalized = keyName.trim();
         if (normalized.startsWith("{") && normalized.endsWith("}")) {
             normalized = normalized.substring(1, normalized.length() - 1);
         }
         normalized = normalized.replace("'", "").replace("\"", "");
         normalized = normalized.toUpperCase(Locale.ROOT);
+
+
+        String normalized = keyName.trim().toUpperCase(Locale.ROOT);
+
+
+
         Integer mapped = KEY_MAP.get(normalized);
         if (mapped != null) {
             return mapped;
