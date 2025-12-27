@@ -1,11 +1,16 @@
 package com.example.colorbot;
 
+
+import java.awt.Robot;
+
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
+
 import java.util.concurrent.TimeUnit;
+
 import java.util.function.Consumer;
 
 /**
@@ -15,6 +20,12 @@ public class ColorMonitor implements AutoCloseable {
     private final ColorLibrary library;
     private final ScheduledExecutorService executor;
     private ScheduledFuture<?> currentTask;
+
+
+    public ColorMonitor(Robot robot) {
+        this(new ColorLibrary(robot));
+    }
+
 
     public ColorMonitor(ColorLibrary library) {
         this.library = Objects.requireNonNull(library, "library");
@@ -55,7 +66,11 @@ public class ColorMonitor implements AutoCloseable {
                 statusConsumer.accept("Monitoring stopped: " + e.getMessage());
                 stop();
             }
+
+        }, 0, intervalMs, java.util.concurrent.TimeUnit.MILLISECONDS);
+
         }, 0, intervalMs, TimeUnit.MILLISECONDS);
+
     }
 
     public synchronized void stop() {

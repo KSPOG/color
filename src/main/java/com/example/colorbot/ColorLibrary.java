@@ -10,8 +10,12 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
+
+import java.util.Objects;
+
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+
 
 import java.util.Optional;
 
@@ -21,6 +25,13 @@ import java.util.Optional;
 public class ColorLibrary {
     private final Robot robot;
     private volatile ColorSample targetSample;
+
+
+    public ColorLibrary(Robot robot) {
+        this.robot = Objects.requireNonNull(robot, "robot");
+        this.robot.setAutoWaitForIdle(true);
+    }
+
 
     public ColorLibrary() {
         try {
