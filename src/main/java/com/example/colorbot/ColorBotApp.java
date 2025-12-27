@@ -8,6 +8,12 @@ import javax.swing.ImageIcon;
 
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+
+
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -15,16 +21,19 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
 
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+
 
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -34,6 +43,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.Utilities;
+
 
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -45,6 +55,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,6 +64,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 import java.awt.Image;
+
+
+import java.awt.Image;
+
 
 import java.awt.Insets;
 import java.awt.MouseInfo;
@@ -128,6 +143,7 @@ public class ColorBotApp extends JFrame {
         return DEFAULT_VERSION;
     }
 
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -194,6 +210,7 @@ public class ColorBotApp extends JFrame {
 
 
 
+
     public ColorBotApp() {
         super("Color Bot");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -256,6 +273,7 @@ public class ColorBotApp extends JFrame {
         attachScriptAutofill();
 
 
+
         registerScreenshotHotkey();
 
     }
@@ -270,6 +288,7 @@ public class ColorBotApp extends JFrame {
         scriptArea.setPreferredSize(new Dimension(480, 200));
 
 
+
         savedScriptsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         savedScriptsList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -280,6 +299,7 @@ public class ColorBotApp extends JFrame {
             }
         });
         loadSavedScripts();
+
 
         seedSavedScripts();
 
@@ -293,6 +313,7 @@ public class ColorBotApp extends JFrame {
         centerSplit.setResizeWeight(0.7);
         centerSplit.setOneTouchExpandable(true);
         main.add(centerSplit, BorderLayout.CENTER);
+
 
         main.add(buildScriptPanel(), BorderLayout.CENTER);
         main.add(new JScrollPane(logArea), BorderLayout.SOUTH);
@@ -311,6 +332,7 @@ public class ColorBotApp extends JFrame {
         int row = 0;
         gbc.gridy = row++;
         gbc.gridx = 0;
+
 
         panel.add(new JLabel("Coordinates"), gbc);
         gbc.gridx = 1;
@@ -365,6 +387,7 @@ public class ColorBotApp extends JFrame {
         gbc.gridy = row++;
         gbc.gridx = 0;
 
+
         gbc.gridwidth = 4;
         panel.add(failSafeCheckbox, gbc);
         gbc.gridwidth = 1;
@@ -376,6 +399,7 @@ public class ColorBotApp extends JFrame {
         startButton.addActionListener(e -> toggleMonitor(startButton));
         verifyButton.addActionListener(e -> verifyColor());
         updateButton.addActionListener(e -> checkForUpdatesAsync());
+
 
         startButton.addActionListener(e -> toggleMonitor(startButton));
         verifyButton.addActionListener(e -> verifyColor());
@@ -457,6 +481,7 @@ public class ColorBotApp extends JFrame {
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         editorPanel.add(scriptScroll, BorderLayout.CENTER);
         runButton.addActionListener(e -> toggleScriptRun());
+
 
         editorPanel.add(new JLabel("Supported: WAIT, PRESS, HOLD, RELEASE, TYPE, MOVE, CLICK, CAPTURE_TARGET, IF_COLOR, LOOPS"), BorderLayout.NORTH);
         editorPanel.add(new JScrollPane(scriptArea), BorderLayout.CENTER);
@@ -623,6 +648,7 @@ public class ColorBotApp extends JFrame {
         savedScripts.put("Blue Eye example", defaultScript());
         savedScripts.put("Looped press", "# Looping example\nLOOP 3\n  PRESS " + visibleKeyField.getText() + "\n  WAIT 250\nEND_LOOP\nLOG Loop finished");
 
+
         refreshSavedScriptsList();
         savedScriptsList.setSelectedIndex(0);
     }
@@ -760,8 +786,6 @@ public class ColorBotApp extends JFrame {
             refreshSavedScriptsList();
             appendLog("Deleted script: " + name);
 
-            persistSavedScripts();
-
         }
     }
 
@@ -781,6 +805,7 @@ public class ColorBotApp extends JFrame {
     }
 
 
+
                 "  Macro.Pause('250')\n" +
                 "  Keyboard.Hold keys('{" + visibleKeyField.getText() + "}')\n" +
                 "  Macro.Pause('50')\n" +
@@ -791,6 +816,7 @@ public class ColorBotApp extends JFrame {
                 "  PRESS " + visibleKeyField.getText() + "\n" +
                 "end";
     }
+
 
 
     private void attachScriptAutofill() {
@@ -831,8 +857,10 @@ public class ColorBotApp extends JFrame {
                 ColorSample fresh = library.captureCurrentPixel();
                 library.setTargetSample(fresh);
 
+
                 coordinateField.setText(fresh.location().x + ", " + fresh.location().y);
                 colorField.setText(fresh.toHex());
+
 
                 appendLog("Captured target at " + fresh.location() + " = " + fresh.toHex());
                 return fresh;
@@ -875,6 +903,7 @@ public class ColorBotApp extends JFrame {
                 captureTarget();
             }
         });
+
       
       captureHotkeyField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -931,6 +960,7 @@ public class ColorBotApp extends JFrame {
                 captureFromScreenshot();
             }
 
+
       
         panel.setBorder(BorderFactory.createTitledBorder("Script playground"));
         panel.add(new JScrollPane(scriptArea), BorderLayout.CENTER);
@@ -965,12 +995,17 @@ public class ColorBotApp extends JFrame {
             }
             return false;
 
+
         });
     }
 
     private void captureTarget() {
         ColorSample sample = library.captureCurrentPixel();
         library.setTargetSample(sample);
+        appendLog("Captured target at " + sample.location() + " = " + sample.toHex());
+    }
+
+
 
         appendLog("Captured target at " + sample.location() + " = " + sample.toHex());
     }
@@ -980,6 +1015,7 @@ public class ColorBotApp extends JFrame {
         colorField.setText(sample.toHex());
         appendLog("Captured target at " + sample.location() + " = " + sample.toHex());
     }
+
 
 
 
@@ -994,6 +1030,11 @@ public class ColorBotApp extends JFrame {
         final double[] zoom = {1.0};
 
 
+
+        final double[] zoom = {1.0};
+
+
+
         javax.swing.JDialog dialog = new javax.swing.JDialog(this, "Pick pixel from screenshot", true);
         javax.swing.JLabel label = new javax.swing.JLabel(new javax.swing.ImageIcon(copy));
         label.addMouseListener(new MouseAdapter() {
@@ -1003,8 +1044,13 @@ public class ColorBotApp extends JFrame {
                 int x = (int) Math.round(e.getX() / zoom[0]);
                 int y = (int) Math.round(e.getY() / zoom[0]);
 
+
+                int x = (int) Math.round(e.getX() / zoom[0]);
+                int y = (int) Math.round(e.getY() / zoom[0]);
+
                 int x = e.getX();
                 int y = e.getY();
+
 
                 if (x < 0 || y < 0 || x >= copy.getWidth() || y >= copy.getHeight()) {
                     return;
@@ -1013,13 +1059,17 @@ public class ColorBotApp extends JFrame {
                 ColorSample sample = new ColorSample(new Point(x, y), color);
                 library.setTargetSample(sample);
 
+
                 coordinateField.setText(sample.location().x + ", " + sample.location().y);
                 colorField.setText(sample.toHex());
+
 
                 appendLog("Captured screenshot target at (" + x + ", " + y + ") = " + sample.toHex());
                 dialog.dispose();
             }
         });
+
+
 
         label.addMouseWheelListener(event -> {
             if (!event.isControlDown()) {
@@ -1064,6 +1114,11 @@ public class ColorBotApp extends JFrame {
                     library.setTargetSample(captured);
                     return captured;
                 });
+
+        int interval = DEFAULT_INTERVAL_MS;
+        boolean failSafe = failSafeCheckbox.isSelected();
+        monitor.start(sample, DEFAULT_VISIBLE_KEY, DEFAULT_MISSING_KEY, failSafe, interval, this::appendLog);
+
 
         int interval = DEFAULT_INTERVAL_MS;
         boolean failSafe = failSafeCheckbox.isSelected();
@@ -1120,9 +1175,11 @@ public class ColorBotApp extends JFrame {
             });
         }
 
+
     private void runScript() {
         String scriptText = scriptArea.getText();
         scriptExecutor.submit(() -> scriptEngine.run(scriptText, this::appendLog));
+
     }
 
     private void appendLog(String text) {
@@ -1150,8 +1207,10 @@ public class ColorBotApp extends JFrame {
     }
 
 
+
         });
     }
+
 
 
     public static void main(String[] args) {

@@ -10,8 +10,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+
 import java.util.List;
 import java.util.Locale;
+
 
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -23,6 +25,10 @@ import java.util.regex.Pattern;
 public class ColorScriptEngine {
     private static final Pattern WAIT_PATTERN = Pattern.compile("WAIT\\s+(\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern PRESS_PATTERN = Pattern.compile("PRESS\\s+([A-Z0-9_]+)", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern HOLD_PATTERN = Pattern.compile("HOLD\\s+(.+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern RELEASE_PATTERN = Pattern.compile("RELEASE\\s+(.+)", Pattern.CASE_INSENSITIVE);
+
 
     private static final Pattern HOLD_PATTERN = Pattern.compile("HOLD\\s+(.+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern RELEASE_PATTERN = Pattern.compile("RELEASE\\s+(.+)", Pattern.CASE_INSENSITIVE);
@@ -48,7 +54,11 @@ public class ColorScriptEngine {
 
             "IF_COLOR\\s+(-?\\d+)\\s+(-?\\d+)\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
 
+
+            "IF_COLOR\\s+(-?\\d+)\\s+(-?\\d+)\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+(\\d{1,3})\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
+
             "IF_COLOR\\s+(-?\\d+)\\s+(-?\\d+)\\s+([#A-Fa-f0-9]{6,7})\\s+THEN\\s+(.+?)\\s+(?:ELSE\\s+(.+))?",
+
 
 
             Pattern.CASE_INSENSITIVE);
@@ -59,7 +69,11 @@ public class ColorScriptEngine {
     private static final Pattern LOOP_PATTERN = Pattern.compile("LOOP\\s+(\\d+|FOREVER)", Pattern.CASE_INSENSITIVE);
 
 
+    private static final Pattern LOOP_PATTERN = Pattern.compile("LOOP\\s+(\\d+|FOREVER)", Pattern.CASE_INSENSITIVE);
+
+
     private static final Pattern LOOP_PATTERN = Pattern.compile("LOOP\\s+(\\d+)", Pattern.CASE_INSENSITIVE);
+
 
     private static final Pattern END_LOOP_PATTERN = Pattern.compile("END_LOOP", Pattern.CASE_INSENSITIVE);
     private static final Pattern BLUE_EYE_PAUSE_PATTERN = Pattern.compile("MACRO\\.PAUSE\\('?(\\d+)'?\\)", Pattern.CASE_INSENSITIVE);
@@ -107,6 +121,7 @@ public class ColorScriptEngine {
         String[] lines = scriptText.split("\\R");
 
 
+
             "IF\\s+COLOR\\.AT\\s+COORDINATE\\s+IS\\s+(NOT\\s+)?\\(RGB\\s+'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\)\\s*BEGIN",
 
             "IF\\s+COLOR\\.AT\\s+COORDINATE\\s+IS\\s+(NOT\\s+)?\(RGB\\s+'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\\s*,?\\s*'?(\\d+)'?\)\\s*BEGIN",
@@ -127,6 +142,7 @@ public class ColorScriptEngine {
         String[] lines = scriptText.split("\\R");
 
 
+
         runLines(lines, 0, lines.length, logger, executed);
         return executed;
     }
@@ -137,6 +153,7 @@ public class ColorScriptEngine {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException("Script stopped");
             }
+
 
     private void runLines(String[] lines, int start, int end, Consumer<String> logger, List<String> executed) {
         for (int i = start; i < end; i++) {
@@ -169,6 +186,7 @@ public class ColorScriptEngine {
 
 
 
+
                 Matcher blueEyeLoop = BLUE_EYE_LOOP_PATTERN.matcher(line);
                 if (blueEyeLoop.matches()) {
                     int count = Integer.parseInt(blueEyeLoop.group(1));
@@ -187,8 +205,10 @@ public class ColorScriptEngine {
                             runLines(lines, i + 1, blockEnd, logger, executed);
                         }
 
+
                     for (int iteration = 0; iteration < count; iteration++) {
                         runLines(lines, i + 1, blockEnd, logger, executed);
+
 
                     }
                     i = blockEnd;
@@ -284,6 +304,7 @@ public class ColorScriptEngine {
                         library.sleepMs(1000);
                     }
 
+
                     boolean matches = library.isColorAt(new Point(x, y), new Color(r, g, b));
                     if (negate) {
                         matches = !matches;
@@ -303,7 +324,13 @@ public class ColorScriptEngine {
                     boolean infinite = countToken.equalsIgnoreCase("forever");
                     int count = infinite ? -1 : Integer.parseInt(countToken);
 
+
+                    String countToken = loopMatcher.group(1);
+                    boolean infinite = countToken.equalsIgnoreCase("forever");
+                    int count = infinite ? -1 : Integer.parseInt(countToken);
+
                     int count = Integer.parseInt(loopMatcher.group(1));
+
 
                     int loopEnd = findLoopEnd(lines, i + 1, end);
                     if (loopEnd == -1) {
@@ -319,8 +346,10 @@ public class ColorScriptEngine {
                             runLines(lines, i + 1, loopEnd, logger, executed);
                         }
 
+
                     for (int iteration = 0; iteration < count; iteration++) {
                         runLines(lines, i + 1, loopEnd, logger, executed);
+
 
                     }
                     i = loopEnd; // skip to the END_LOOP marker
@@ -345,12 +374,14 @@ public class ColorScriptEngine {
             }
         }
 
+
             } catch (Exception e) {
                 String message = "Line " + lineNumber + " failed: " + e.getMessage();
                 logger.accept(message);
                 break;
             }
         }
+
 
 
     }
@@ -396,6 +427,7 @@ public class ColorScriptEngine {
             logger.accept("Set " + name + " = " + value);
             return;
         }
+
 
 
         return executed;
@@ -477,9 +509,11 @@ public class ColorScriptEngine {
             String action = matches ? colorMatcher.group(6) : colorMatcher.group(7);
 
 
+
             Color color = ColorLibrary.parseColor(colorMatcher.group(3));
             boolean matches = library.isColorAt(new Point(x, y), color);
             String action = matches ? colorMatcher.group(4) : colorMatcher.group(5);
+
 
 
             if (action != null) {
@@ -496,6 +530,10 @@ public class ColorScriptEngine {
         if (cooldownMatcher.matches()) {
             String lastVar = normalizeVar(cooldownMatcher.group(1));
             String cooldownVar = normalizeVar(cooldownMatcher.group(2));
+
+            String thenAction = cooldownMatcher.group(3);
+            String elseAction = cooldownMatcher.group(4);
+
             long lastValue = requireVariable(lastVar);
             long cooldown = requireVariable(cooldownVar);
             long now = System.currentTimeMillis();
@@ -506,11 +544,31 @@ public class ColorScriptEngine {
                 externalCooldowns.put(lastVar, lastValue);
             }
             boolean ready = now - lastValue >= cooldown;
+
+
+            boolean thenDisabled = isActionDisabled(thenAction);
+            boolean elseDisabled = isActionDisabled(elseAction);
+            if (thenDisabled && (elseAction == null || elseDisabled)) {
+                logger.accept("Cooldown " + lastVar + "/" + cooldownVar + " skipped: actions disabled");
+                return;
+            }
+
+            String action = ready ? thenAction : elseAction;
+
             String action = ready ? cooldownMatcher.group(3) : cooldownMatcher.group(4);
+
             if (action != null) {
                 String trimmedAction = action.trim();
                 if (isActionDisabled(trimmedAction)) {
                     logger.accept("Skipped " + trimmedAction + " because target skill is disabled");
+
+                } else {
+                    executeLine(trimmedAction, logger);
+                }
+            }
+            logger.accept("Cooldown " + lastVar + "/" + cooldownVar + " was " + (ready ? "ready" : "waiting") +
+                    " (last=" + lastValue + ", cd=" + cooldown + ", now=" + now + ")");
+
                     logger.accept("Cooldown " + lastVar + "/" + cooldownVar + " was " + (ready ? "ready" : "waiting") +
                             " (last=" + lastValue + ", cd=" + cooldown + ", now=" + now + ")");
                     return;
@@ -519,6 +577,7 @@ public class ColorScriptEngine {
             }
             logger.accept("Cooldown " + lastVar + "/" + cooldownVar + " was " + (ready ? "ready" : "waiting") +
                     " (last=" + lastValue + ", cd=" + cooldown + ", now=" + now + ")");
+
 
             return;
         }
