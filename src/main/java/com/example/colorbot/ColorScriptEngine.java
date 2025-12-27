@@ -646,6 +646,9 @@ public class ColorScriptEngine {
     }
 
     private boolean isActionDisabled(String action) {
+        if (action == null) {
+            return false;
+        }
         Matcher pressMatcher = PRESS_PATTERN.matcher(action);
         if (pressMatcher.matches()) {
             String key = normalizeKey(pressMatcher.group(1));
